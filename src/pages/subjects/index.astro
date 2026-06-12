@@ -1,0 +1,34 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { getCollection } from 'astro:content';
+
+const subjects = (await getCollection('subjects')).sort(
+  (a, b) => a.data.order - b.data.order
+);
+const posts = await getCollection('posts', ({ data }) => !data.draft);
+const notes = await getCollection('notes');
+---
+
+<BaseLayout title="Subjects — Tajdid">
+  <main class="prose">
+    <h1 class="page-title">Subjects</h1>
+    <p class="muted">Everything I'm studying, organized by topic.</p>
+    <div class="card-grid">
+      {
+        subjects.map((subject) => {
+          const postCount = posts.filter((p) => p.data.subject === subject.id).length;
+          const noteCount = notes.filter((n) => n.data.subject === subject.id).length;
+          return (
+            <a class="card" href={`/subjects/${subject.id}/`}>
+              <h3>{subject.data.title}</h3>
+              <p>{subject.data.description}</p>
+              <p style="margin-top: 0.6rem;" class="small">
+                {noteCount} note{noteCount === 1 ? '' : 's'} · {postCount} post{postCount === 1 ? '' : 's'}
+              </p>
+            </a>
+          );
+        })
+      }
+    </div>
+  </main>
+</BaseLayout>

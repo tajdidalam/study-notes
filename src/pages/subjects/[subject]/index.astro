@@ -1,0 +1,80 @@
+---
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import { getCollection } from 'astro:content';
+
+export async function getStaticPaths() {
+  const subjects = await getCollection('subjects');
+  return subjects.map((subject) => ({
+    params: { subject: subject.id },
+    props: { subject },
+  }));
+}
+
+const { subject } = Astro.props;
+const posts = (
+  await getCollection(
+    'posts',
+    ({ data }) => data.subject === subject.id && !data.draft
+  )
+).sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
+
+const notes = (
+  await getCollection('notes', ({ data }) => data.subject === subject.id)
+).sort((a, b) => a.data.order - b.data.order);
+
+const sections = new Map<string, typeof notes>();
+for (const note of notes) {
+  const section = note.data.section;
+  if (!sections.has(section)) sections.set(section, []);
+  sections.get(section)!.push(note);
+}
+---
+
+<BaseLayout title={`${subject.data.title} — Tajdid`} description={subject.data.description}>
+  <main class="prose">
+    <h1 class="page-title">{subject.data.title}</h1>
+    <p class="muted">{subject.data.description}</p>
+
+    <h2>Notes</h2>
+    {notes.length === 0 && <p class="muted">No notes yet.</p>}
+    {
+      [...sections.entries()].map(([section, sectionNotes]) => (
+        <>
+          <h3>{section}</h3>
+          <ul class="item-list">
+            {sectionNotes.map((note) => (
+              <li>
+                <a class="title" href={`/subjects/${subject.id}/notes/${note.id}/`}>
+                  {note.data.title}
+                </a>
+                {note.data.description && <div class="muted">{note.data.description}</div>}
+              </li>
+            ))}
+          </ul>
+        </>
+      ))
+    }
+
+    <h2>Blog posts</h2>
+    {posts.length === 0 && <p class="muted">No posts yet.</p>}
+    <ul class="item-list">
+      {
+        posts.map((post) => (
+          <li>
+            <a class="title" href={`/subjects/${subject.id}/blog/${post.id}/`}>
+              {post.data.title}
+            </a>
+            <div class="muted small">
+              {post.data.date.toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+              })}
+            </div>
+            {post.data.description && <div class="muted">{post.data.description}</div>}
+          </li>
+        ))
+      }
+    </ul>
+  </main>
+</BaseLayout>

@@ -1,0 +1,65 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { getCollection } from 'astro:content';
+
+const subjects = (await getCollection('subjects')).sort(
+  (a, b) => a.data.order - b.data.order
+);
+const posts = (await getCollection('posts', ({ data }) => !data.draft)).sort(
+  (a, b) => b.data.date.valueOf() - a.data.date.valueOf()
+);
+const recentPosts = posts.slice(0, 3);
+---
+
+<BaseLayout title="Tajdid — Study Notes" description="Personal profile, study notes, and blog.">
+  <main class="prose">
+    <section class="profile">
+      <img src="/profile.svg" alt="Portrait of Tajdid" />
+      <div>
+        <h1>Hi, I'm Tajdid</h1>
+        <p class="muted" style="margin: 0;">
+          I write study notes and short posts about the things I'm learning —
+          mostly physics and mathematics, with plenty of equations.
+        </p>
+        <div class="link-row">
+          <a href="mailto:sourov007@gmail.com">Email</a>
+          <a href="https://github.com/" target="_blank" rel="noopener">GitHub</a>
+          <a href="/subjects/">My notes →</a>
+        </div>
+      </div>
+    </section>
+
+    <h2>Subjects</h2>
+    <div class="card-grid">
+      {
+        subjects.map((subject) => (
+          <a class="card" href={`/subjects/${subject.id}/`}>
+            <h3>{subject.data.title}</h3>
+            <p>{subject.data.description}</p>
+          </a>
+        ))
+      }
+    </div>
+
+    <h2>Recent posts</h2>
+    <ul class="item-list">
+      {
+        recentPosts.map((post) => (
+          <li>
+            <a class="title" href={`/subjects/${post.data.subject}/blog/${post.id}/`}>
+              {post.data.title}
+            </a>
+            <div class="muted small">
+              {post.data.date.toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+              })}
+            </div>
+            <div class="muted">{post.data.description}</div>
+          </li>
+        ))
+      }
+    </ul>
+  </main>
+</BaseLayout>

@@ -1,0 +1,37 @@
+---
+import '@fontsource-variable/inter';
+import 'katex/dist/katex.min.css';
+import '../styles/global.css';
+
+interface Props {
+  title: string;
+  description?: string;
+}
+
+const { title, description = 'Personal study notes and blog.' } = Astro.props;
+const path = Astro.url.pathname;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content={description} />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <title>{title}</title>
+  </head>
+  <body>
+    <header class="site-header">
+      <nav>
+        <a href="/" class="brand">Tajdid</a>
+        <a href="/" aria-current={path === '/' ? 'page' : undefined}>About</a>
+        <a href="/subjects/" aria-current={path.startsWith('/subjects') ? 'page' : undefined}>Subjects</a>
+      </nav>
+    </header>
+    <slot />
+    <footer class="site-footer">
+      © {new Date().getFullYear()} Tajdid · Built with Astro
+    </footer>
+  </body>
+</html>

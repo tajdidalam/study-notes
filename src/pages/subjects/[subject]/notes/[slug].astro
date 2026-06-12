@@ -1,0 +1,39 @@
+---
+import BaseLayout from '../../../../layouts/BaseLayout.astro';
+import NotesSidebar from '../../../../components/NotesSidebar.astro';
+import TableOfContents from '../../../../components/TableOfContents.astro';
+import { getCollection, getEntry, render } from 'astro:content';
+
+export async function getStaticPaths() {
+  const notes = await getCollection('notes');
+  return notes.map((note) => ({
+    params: { subject: note.data.subject, slug: note.id },
+    props: { note },
+  }));
+}
+
+const { note } = Astro.props;
+const subject = await getEntry('subjects', note.data.subject);
+const subjectNotes = await getCollection(
+  'notes',
+  ({ data }) => data.subject === note.data.subject
+);
+const { Content, headings } = await render(note);
+---
+
+<BaseLayout title={`${note.data.title} — Tajdid`} description={note.data.description}>
+  <div class="notes-layout">
+    <NotesSidebar
+      subjectId={note.data.subject}
+      subjectTitle={subject?.data.title ?? note.data.subject}
+      notes={subjectNotes}
+      currentId={note.id}
+    />
+    <article class="note-article">
+      <h1 class="page-title">{note.data.title}</h1>
+      {note.data.description && <p class="muted">{note.data.description}</p>}
+      <Content />
+    </article>
+    <TableOfContents headings={headings} />
+  </div>
+</BaseLayout>

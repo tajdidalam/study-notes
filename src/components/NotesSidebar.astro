@@ -1,0 +1,45 @@
+---
+import type { CollectionEntry } from 'astro:content';
+
+interface Props {
+  subjectId: string;
+  subjectTitle: string;
+  notes: CollectionEntry<'notes'>[];
+  currentId?: string;
+}
+
+const { subjectId, subjectTitle, notes, currentId } = Astro.props;
+
+const sorted = [...notes].sort((a, b) => a.data.order - b.data.order);
+const sections = new Map<string, typeof sorted>();
+for (const note of sorted) {
+  const section = note.data.section;
+  if (!sections.has(section)) sections.set(section, []);
+  sections.get(section)!.push(note);
+}
+---
+
+<aside class="notes-sidebar">
+  <div class="section-label">
+    <a href={`/subjects/${subjectId}/`} style="color: inherit;">{subjectTitle}</a>
+  </div>
+  {
+    [...sections.entries()].map(([section, sectionNotes]) => (
+      <>
+        <div class="section-label">{section}</div>
+        <ul>
+          {sectionNotes.map((note) => (
+            <li>
+              <a
+                href={`/subjects/${subjectId}/notes/${note.id}/`}
+                aria-current={note.id === currentId ? 'page' : undefined}
+              >
+                {note.data.title}
+              </a>
+            </li>
+          ))}
+        </ul>
+      </>
+    ))
+  }
+</aside>

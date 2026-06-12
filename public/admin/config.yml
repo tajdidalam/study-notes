@@ -1,13 +1,8 @@
-# Sveltia CMS configuration
-#
-# Before first use, replace the placeholder below:
-#   base_url -> your deployed sveltia-cms-auth Worker URL
-
 backend:
   name: github
   repo: tajdidalam/study-notes
   branch: main
-  base_url: https://sveltia-cms-auth.YOUR_SUBDOMAIN.workers.dev
+  base_url: https://sveltia-cms-auth.sourov007.workers.dev
 
 media_folder: public/uploads
 public_folder: /uploads
